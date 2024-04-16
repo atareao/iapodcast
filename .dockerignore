@@ -1,0 +1,13 @@
+target/
+.git
+Dockerfile
+README.md
+.gitignore
+.justfile
+assets/
+episodes/
+pages/
+posts/
+templates/
+.sessions/
+public/
