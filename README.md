@@ -1,12 +1,14 @@
 <div align="center">
 
-# Title
+# iapodcast
 
-This project is a simple example of using []() to make a huge website with JavaScript.
+¿Quieres crear un podcast con su página web? Con IAPodcast, es posible. Para alojar la página web, lo puedes hacer en GitLab y los audio en Interet Archive.
+
+<br />
 [![GitHub stars](https://img.shields.io/github/stars/username/repo-name.svg)](https://github.com/username/repo-name/stargazers)
-![Repository Size](https://img.shields.io/github/repo-size/username/repo-name.svg)
-![Language Count](https://img.shields.io/github/languages/count/username/repo-name.svg)
-![Last Commit](https://img.shields.io/github/last-commit/username/repo-name.svg)
+![Repository Size](https://img.shields.io/github/repo-size/atareao/iapodcasat.svg)
+![Language Count](https://img.shields.io/github/languages/count/atareao/iapodcasat.svg)
+![Last Commit](https://img.shields.io/github/last-commit/atareao/iapodcast.svg)
 ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 
 <br/>
