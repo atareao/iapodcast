@@ -5,10 +5,10 @@
 ¿Quieres crear un podcast con su página web? Con IAPodcast, es posible. Para alojar la página web, lo puedes hacer en GitLab y los audio en Interet Archive.
 
 <br />
-[![GitHub stars](https://img.shields.io/github/stars/username/repo-name.svg)](https://github.com/username/repo-name/stargazers)
-![Repository Size](https://img.shields.io/github/repo-size/atareao/iapodcasat.svg)
-![Language Count](https://img.shields.io/github/languages/count/atareao/iapodcasat.svg)
-![Last Commit](https://img.shields.io/github/last-commit/atareao/iapodcast.svg)
+![GitHub Repo stars](https://img.shields.io/github/stars/atareao/iapodcast)
+![Repository Size](https://img.shields.io/github/repo-size/atareao/iapodcasat)
+![Language Count](https://img.shields.io/github/languages/count/atareao/iapodcasat)
+![Last Commit](https://img.shields.io/github/last-commit/atareao/iapodcast)
 ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 
 <br/>
