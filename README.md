@@ -7,12 +7,11 @@
 <br />
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/atareao/iapodcast)
-![Repository Size](https://img.shields.io/github/repo-size/atareao/iapodcasat)
-![Language Count](https://img.shields.io/github/languages/count/atareao/iapodcasat)
+![Repository Size](https://img.shields.io/github/repo-size/atareao/iapodcast)
+![Language Count](https://img.shields.io/github/languages/count/atareao/iapodcast)
 ![Last Commit](https://img.shields.io/github/last-commit/atareao/iapodcast)
 ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 
-<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/atareao/iapodcast">
 
 
 <br/>
