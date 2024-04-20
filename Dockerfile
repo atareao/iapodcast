@@ -1,7 +1,7 @@
 ###############################################################################
 ## Backend builder
 ###############################################################################
-FROM rust:alpine3.19 AS backend_builder
+FROM rust:alpine3.19 AS builder
 
 LABEL maintainer="Lorenzo Carbonell <a.k.a. atareao> lorenzo.carbonell.cerezo@gmail.com"
 
