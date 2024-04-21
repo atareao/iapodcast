@@ -12,14 +12,12 @@ use rss::{
 use chrono::{DateTime, Utc};
 use std::path::Path;
 use std::ffi::OsStr;
+use super::Podcast;
 
 use crate::models::utils::from_sec;
 
-use super::Podcast;
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Post{
-    pub podcast: Podcast,
     pub slug: String,
     pub excerpt: String,
     pub title: String,
@@ -35,9 +33,9 @@ pub struct Post{
     pub downloads: u64,
 }
 
-impl Into<Item> for Post{
-    fn into(self) -> Item{
-        let link = format!("{url}/{slug}", url=self.podcast.url,
+impl Post{
+    pub fn get_item(&self, podcast: &Podcast) -> Item{
+        let link = format!("{url}/{slug}", url=podcast.url,
             slug=self.slug);
         let categories: Vec<Category> = self.subject.iter()
             .map(|c| CategoryBuilder::default()
@@ -52,12 +50,12 @@ impl Into<Item> for Post{
             .unwrap();
         let mime_type = format!("audio/{extension}");
         let enclosure = EnclosureBuilder::default()
-            .url(url)
+            .url(url.clone())
             .length(self.length.to_string())
             .mime_type(mime_type)
             .build();
         let guid = GuidBuilder::default()
-            .value(self.identifier)
+            .value(self.identifier.to_string())
             .build();
         let source = SourceBuilder::default()
             .url(url)
@@ -65,25 +63,25 @@ impl Into<Item> for Post{
 
         let keywords: String = self.subject.join(",");
         let itunes_ext = ITunesItemExtensionBuilder::default()
-            .author(Some(self.podcast.author))
+            .author(Some(podcast.author.to_string()))
             .duration(Some(from_sec(self.length)))
-            .explicit(Some(self.podcast.explicit.to_string()))
-            .subtitle(Some(self.title))
-            .summary(Some(self.content))
+            .explicit(Some(podcast.explicit.to_string()))
+            .subtitle(Some(self.title.to_string()))
+            .summary(Some(self.content.to_string()))
             .keywords(Some(keywords))
             .episode(Some(self.number.to_string()))
             .build();
         ItemBuilder::default()
-            .title(Some(self.title))
+            .title(Some(self.title.to_string()))
             .link(Some(link))
-            .description(Some(self.content))
-            .author(Some(self.podcast.author))
+            .description(Some(self.content.to_string()))
+            .author(Some(podcast.author.to_string()))
             .categories(categories)
             .enclosure(Some(enclosure))
             .guid(Some(guid))
             .pub_date(Some(self.date.to_rfc2822()))
             .source(Some(source))
-            .content(Some(self.content))
+            .content(Some(self.content.to_string()))
             .itunes_ext(Some(itunes_ext))
             .build()
     }

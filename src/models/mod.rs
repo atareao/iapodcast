@@ -7,12 +7,13 @@ pub mod episode;
 mod utils;
 
 
+use error::Error;
 use minijinja::{Environment, path_loader};
 use once_cell::sync::Lazy;
 use chrono::{DateTime, FixedOffset};
 use chrono_tz::Tz;
 use minijinja::value::{Kwargs, Value};
-use minijinja::{Error, ErrorKind, State};
+use minijinja::{Error as MiniError, ErrorKind, State};
 
 pub static ENV: Lazy<Environment<'static>> = Lazy::new(|| {
     let mut env = Environment::new();
@@ -48,23 +49,23 @@ fn striptags(value: String) -> String {
 
 fn value_to_chrono_datetime(
     value: Value,
-) -> Result<DateTime<FixedOffset>, Error> {
+) -> Result<DateTime<FixedOffset>, MiniError> {
     match value.as_str(){
         Some(s) => match DateTime::parse_from_rfc3339(s){
             Ok(dt) => Ok(dt),
-            Err(e) => Err(Error::new(
+            Err(e) => Err(MiniError::new(
                 ErrorKind::MissingArgument,
                 e.to_string()
             )),
         },
-        None => Err(Error::new(
+        None => Err(MiniError::new(
             ErrorKind::MissingArgument,
             "Not a valid string"
         )),
     }
 }
 
-pub fn date(_state: &State, value: Value, kwargs: Kwargs) -> Result<String, Error> {
+pub fn date(_state: &State, value: Value, kwargs: Kwargs) -> Result<String, MiniError> {
     let format = kwargs.get::<Option<&str>>("format")?;
     match kwargs.get::<Option<&str>>("timezone")?{
         Some(timezone) => {
@@ -80,14 +81,14 @@ pub fn date(_state: &State, value: Value, kwargs: Kwargs) -> Result<String, Erro
     }
 }
 
-pub fn truncate(_state: &State, value: Value, kwargs: Kwargs) -> Result<String, Error> {
+pub fn truncate(_state: &State, value: Value, kwargs: Kwargs) -> Result<String, MiniError> {
     let length = kwargs.get::<Option<usize>>("length")?.unwrap();
     match value.as_str() {
         Some(s) => match value.as_str().unwrap().char_indices().nth(length) {
             None => Ok(s.to_string()),
             Some((idx, _)) => Ok(s[..idx].to_string()),
         },
-        None => Err(Error::new(
+        None => Err(MiniError::new(
             ErrorKind::MissingArgument,
             "Not a valid string"
         )),

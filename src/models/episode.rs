@@ -11,7 +11,7 @@ use super::{
         IAMetadata,
         Mp3Metadata,
     },
-    config::Post,
+    config::{Post, Podcast},
     utils::{
         get_slug,
         get_excerpt
@@ -242,31 +242,3 @@ impl Episode{
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use tracing_subscriber::{
-        EnvFilter,
-        layer::SubscriberExt,
-        util::SubscriberInitExt
-    };
-    use std::str::FromStr;
-    use tracing::debug;
-    use crate::models::episode::Episode;
-
-    #[tokio::test]
-    async fn test2(){
-        tracing_subscriber::registry()
-            .with(EnvFilter::from_str("debug").unwrap())
-            .with(tracing_subscriber::fmt::layer())
-            .init();
-
-        let episode = Episode::new("pihole.md").await.unwrap();
-        debug!("Title: {}", episode.metadata.title);
-        debug!("=========================");
-        debug!("{:?}", episode);
-        debug!("=========================");
-        assert!(!episode.metadata.title.is_empty());
-    }
-}
-

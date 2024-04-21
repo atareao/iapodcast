@@ -1,15 +1,12 @@
 use serde::{Deserialize, Serialize};
-use rss::{
-    ChannelBuilder,
-    ImageBuilder,
-    CategoryBuilder,
-    Item,
-    extension::itunes::ITunesChannelExtensionBuilder
-};
 use super::{
-    config::Podcast,
+    config::{
+        Podcast,
+        Post
+    },
     Error,
 };
+use rss::Item;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Feed{
@@ -22,26 +19,12 @@ impl Feed {
             podcast,
         }
     }
-    pub fn rss(&self, episodes: Vec<Item>) -> Result<String, Error>{
-        let image = ImageBuilder::default()
-            .url(&self.podcast.image_url)
-            .build();
-        let category = CategoryBuilder::default()
-            .name(&self.podcast.category)
-            .build();
-        let itunes = ITunesChannelExtensionBuilder::default()
-            .author(Some(self.podcast.author.clone()))
-            .build();
-        let mut channel = ChannelBuilder::default()
-            .title(&self.podcast.title)
-            .link(&self.podcast.link)
-            .image(Some(image))
-            .category(category)
-            .rating(Some(self.rating.clone()))
-            .description(self.description.clone())
-            .build();
-        channel.set_itunes_ext(itunes);
-        channel.set_items(episodes);
+    pub fn rss(&self, posts: Vec<Post>) -> Result<String, Error>{
+        let mut channel = self.podcast.get_channel();
+        let items: Vec<Item> = posts.iter()
+            .map(|post| post.get_item(&self.podcast))
+            .collect();
+        channel.set_items(items);
         channel.pretty_write_to(std::io::sink(), b' ', 4)?;
         Ok(channel.to_string())
     }
