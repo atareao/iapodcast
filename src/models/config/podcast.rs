@@ -10,7 +10,7 @@ use rss::{
     ChannelBuilder
 };
 use rss::Item;
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, Deserializer};
 use super::super::{
     error::Error,
     config::Post,
@@ -26,12 +26,25 @@ pub struct Podcast{
     pub link: String,
     pub image_url: String,
     pub category: String,
+    #[serde(deserialize_with = "empty_as_none")]
     pub subcategory: Option<String>,
     pub explicit: bool,
     pub title: String,
     pub description: String,
     pub keywords: Vec<String>,
     pub license: String,
+}
+
+fn empty_as_none<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    if s.is_empty() {
+        Ok(None)
+    }else{
+        Ok(Some(s.to_string()))
+    }
 }
 
 impl Podcast {
@@ -89,7 +102,7 @@ impl Podcast {
     pub fn get_feed(&self, posts: &[Post]) -> Result<String, Error> {
         let mut channel = self.get_channel();
         let items: Vec<Item> = posts.iter()
-            .map(|post| post.get_item(&self))
+            .map(|post| post.get_item(self))
             .collect();
         channel.set_items(items);
         channel.pretty_write_to(std::io::sink(), b' ', 4)?;
