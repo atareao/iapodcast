@@ -72,6 +72,27 @@ pub fn get_unix_time(ymd: &str) -> DateTime<Utc>{
     TimeZone::from_utc_datetime(&Utc, &ndt)
 }
 
+pub fn from_sec(seconds: u64)-> String {
+    let (hrs, min, sec) = to_time(seconds);
+
+    // 0>2 pads the number with 0s to the left if less than 2 digits wide
+    if hrs > 0 { // If there are hours to show:
+        format!("{hrs}:{min:0>2}:{sec:0>2}")
+    } else if min > 0 { // Else if there are minutes to show:
+        format!("{min}:{sec:0>2}")
+    } else { // If there are only seconds to show:
+        format!("{sec}")
+    }
+}
+
+fn to_time(secs: u64) -> (u64, u8, u8) {
+    let sec = (secs % 60) as u8;
+    let min = ((secs / 60) % 60) as u8;
+    let hrs = secs / 60 / 60;
+
+    (hrs, min, sec)
+}
+
 #[test]
 fn test_get_first_words(){
     let content = "En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor. Una olla de algo más vaca que carnero, salpicón las más noches, duelos y quebrantos los sábados, lantejas los viernes, algún palomino de añadidura los domingos, consumían las tres partes de su hacienda. El resto della concluían sayo de velarte, calzas de velludo para las fiestas, con sus pantuflos de lo mesmo, y los días de entresemana se honraba con su vellorí de lo más fino. Tenía en su casa una ama que pasaba de los cuarenta, y una sobrina que no llegaba a los veinte, y un mozo de campo y plaza, que así ensillaba el rocín como tomaba la podadera. Frisaba la edad de nuestro hidalgo con los cincuenta años; era de complexión recia, seco de carnes, enjuto de rostro, gran madrugador y amigo de la caza. Quieren decir que tenía el sobrenombre de Quijada, o Quesada, que en esto hay alguna diferencia en los autores que deste caso escriben; aunque por conjeturas verosímiles se deja entender que se llamaba Quijana. Pero esto importa poco a nuestro cuento: basta que en la narración dél no se salga un punto de la verdad.";
@@ -79,4 +100,5 @@ fn test_get_first_words(){
     println!("FW: {}", fw);
     assert_ne!(fw.len(), 55);
 }
+
 
