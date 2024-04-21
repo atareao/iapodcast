@@ -1,14 +1,27 @@
 log_level: info
-itunes:
+public: public/temporal
+style_css: assets/style.css
+timezone: Europe/Madrid
+podcast:
+  base_url:
+  feed_url:
+  url:
   author: atareao
   email: atareao@atareao.es
+  link:
   image_url: https://rustacean.net/assets/cuddlyferris.png 
+  category: Technology
+  subcategory:
   explicit: false
   title: Diario de un crustáceo
-  summary: Cuento mis aventuras y desventuras en Rust y Linux
+  description: Donde cuento mis aventuras y desventuras en Rust y Linux
   keywords:
     - rust
     - rustacean
     - crate
     - linux
     - neovim
+  license:  CC BY 4.0 Deed
+iaclient:
+  uploader: atareao
+  podcast: Diario de un crustáceo
