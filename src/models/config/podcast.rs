@@ -2,7 +2,6 @@ use rss::{
     extension::itunes::{
         ITunesChannelExtensionBuilder,
         ITunesCategoryBuilder,
-        ITunesCategory,
         ITunesOwnerBuilder,
     },
     Channel,
@@ -10,18 +9,24 @@ use rss::{
     CategoryBuilder,
     ChannelBuilder
 };
+use rss::Item;
 use serde::{Serialize, Deserialize};
-
+use super::super::{
+    error::Error,
+    config::Post,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Podcast{
+    pub base_url: String,
+    pub feed_url: String,
     pub url: String,
     pub author: String,
     pub email: String,
     pub link: String,
     pub image_url: String,
-    pub categories: Vec<String>,
-    pub rating: String,
+    pub category: String,
+    pub subcategory: Option<String>,
     pub explicit: bool,
     pub title: String,
     pub description: String,
@@ -31,12 +36,16 @@ pub struct Podcast{
 
 impl Podcast {
     pub fn get_channel(&self) -> Channel {
-        let itunes_categories: Vec<ITunesCategory> = self.categories.iter()
-            .map(|c| ITunesCategoryBuilder::default()
-                .text(c)
-                .build()
-            )
-            .collect();
+        let mut itunes_category = ITunesCategoryBuilder::default()
+            .text(&self.category)
+            .build();
+        if let Some(subcategory) = &self.subcategory{
+            let itunes_subcategory = ITunesCategoryBuilder::default()
+            .text(subcategory)
+            .build();
+            itunes_category.set_subcategory(Box::new(itunes_subcategory));
+        }
+        let itunes_categories = [itunes_category];
         let keywords = self.keywords.join(",");
         let owner = ITunesOwnerBuilder::default()
             .name(Some(self.author.to_string()))
@@ -55,12 +64,10 @@ impl Podcast {
         let image = ImageBuilder::default()
             .url(&self.image_url)
             .build();
-        let categories: Vec<rss::Category> = self.categories.iter()
-            .map(|c| CategoryBuilder::default()
-                .name(c)
-                .build()
-            )
-            .collect();
+        let categories: Vec<rss::Category> = vec![CategoryBuilder::default()
+            .name(&self.category)
+            .build()
+        ];
         let now = chrono::Local::now().to_rfc2822();
         let copyright = format!("By {author} under {license}",
             author=self.author, license=self.license);
@@ -78,5 +85,15 @@ impl Podcast {
             .image(Some(image))
             .itunes_ext(Some(itunes))
             .build()
+    }
+    pub fn get_feed(&self, posts: &[Post]) -> Result<String, Error> {
+        let mut channel = self.get_channel();
+        let items: Vec<Item> = posts.iter()
+            .map(|post| post.get_item(&self))
+            .collect();
+        channel.set_items(items);
+        channel.pretty_write_to(std::io::sink(), b' ', 4)?;
+        Ok(channel.to_string())
+
     }
 }

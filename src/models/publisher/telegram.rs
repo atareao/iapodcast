@@ -40,7 +40,7 @@ impl Telegram{
                 "caption": content,
                 "parse_mode": "HTML",
             })){
-            Ok(mut response) => {
+            Ok(response) => {
                 if response.status() == 200 {
                     info!("Send audio");
                     debug!("Audio: {audio}");

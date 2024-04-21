@@ -11,7 +11,7 @@ use super::{
         IAMetadata,
         Mp3Metadata,
     },
-    config::{Post, Podcast},
+    config::Post,
     utils::{
         get_slug,
         get_excerpt
@@ -119,14 +119,6 @@ impl Episode{
 
     pub fn set_version(&mut self, version: usize){
         self.metadata.version = version
-    }
-
-    pub fn get_version(&self) -> usize{
-        self.metadata.version
-    }
-
-    pub fn set_datetime(&mut self, datetime: DateTime<Utc>){
-        self.metadata.datetime = Some(datetime);
     }
 
     pub async fn new(filename: &str) -> Result<Self, serde_json::Error>{

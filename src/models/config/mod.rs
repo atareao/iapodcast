@@ -1,8 +1,7 @@
-mod config;
+mod configuration;
 mod podcast;
-mod site;
 mod post;
 
-pub use config::Configuration;
+pub use configuration::Configuration;
 pub use podcast::Podcast;
 pub use post::Post;

@@ -3,7 +3,6 @@ use tokio::fs::read_to_string;
 use std::{process, fmt::{self, Display}};
 
 use super::{
-    site::Site,
     Podcast,
     super::archive::IAClient};
 
@@ -15,7 +14,6 @@ pub struct Configuration{
     public: String,
     style_css: String,
     iaclient: IAClient,
-    site: Site,
 }
 
 impl Display for Configuration{
@@ -29,8 +27,8 @@ impl Display for Configuration{
 }
 
 impl Configuration {
-    pub fn get_site(&self) -> &Site {
-        &self.site
+    pub fn get_podcast(&self) -> &Podcast{
+        &self.podcast
     }
 
     pub fn get_iaclient(&self) -> &IAClient{
@@ -71,4 +69,3 @@ impl Configuration {
         }
     }
 }
-

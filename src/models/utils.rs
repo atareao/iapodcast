@@ -65,6 +65,7 @@ pub fn get_first_words(content: &str, number: usize) -> &str{
     }
 }
 
+#[allow(dead_code)]
 pub fn get_unix_time(ymd: &str) -> DateTime<Utc>{
     let nd = NaiveDate::parse_from_str(ymd, "%Y-%m-%d").unwrap();
     let nt = NaiveTime::from_hms_opt(0, 0, 0).unwrap();

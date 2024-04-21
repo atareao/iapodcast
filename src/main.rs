@@ -50,13 +50,13 @@ async fn main() {
     generate_index(&configuration, &posts).await;
     generate_feed(&configuration, &posts).await;
     generate_stats(&configuration, &posts).await;
-    let public = if configuration.get_site().baseurl.is_empty() {
+    let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
     } else {
         format!(
             "{}/{}",
             configuration.get_public(),
-            configuration.get_site().baseurl
+            configuration.get_podcast().base_url
         )
     };
     //TODO: Copy directory assets a /public/{podcast}/assets
@@ -95,16 +95,16 @@ async fn read_episodes() -> Vec<Post> {
 
 async fn post_with_mastodon(configuration: &Configuration, episode: &Episode,
         mastodon: &Mastodon) {
-    let url = if configuration.get_site().baseurl.is_empty() {
+    let url = if configuration.get_podcast().base_url.is_empty() {
         "".to_string()
-    } else if configuration.get_site().baseurl.starts_with('/') {
-        configuration.get_site().baseurl.to_owned()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
     } else {
-        format!("/{}", configuration.get_site().baseurl)
+        format!("/{}", configuration.get_podcast().base_url)
     };
     let ctx = context! {
         url => url,
-        site => configuration.get_site(),
+        podcast => configuration.get_podcast(),
         post => episode.get_post(),
     };
     let template = ENV.get_template("mastodon.html").unwrap();
@@ -127,12 +127,12 @@ async fn post_with_mastodon(configuration: &Configuration, episode: &Episode,
 
 async fn post_with_telegram(configuration: &Configuration, episode: &Episode,
         telegram: &Telegram) {
-    let url = if configuration.get_site().baseurl.is_empty() {
+    let url = if configuration.get_podcast().base_url.is_empty() {
         "".to_string()
-    } else if configuration.get_site().baseurl.starts_with('/') {
-        configuration.get_site().baseurl.to_owned()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
     } else {
-        format!("/{}", configuration.get_site().baseurl)
+        format!("/{}", configuration.get_podcast().base_url)
     };
     let post = episode.get_post();
     let audio = format!(
@@ -141,7 +141,7 @@ async fn post_with_telegram(configuration: &Configuration, episode: &Episode,
     );
     let ctx = context! {
         url => url,
-        site => configuration.get_site(),
+        podcast => configuration.get_podcast(),
         audio => audio,
         post => episode.get_post(),
     };
@@ -165,34 +165,21 @@ async fn post_with_telegram(configuration: &Configuration, episode: &Episode,
 
 async fn generate_feed(configuration: &Configuration, posts: &[Post]) {
     debug!("generate_feed");
-    let public = if configuration.get_site().baseurl.is_empty() {
+    let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
     } else {
         format!(
             "{}/{}",
             configuration.get_public(),
-            configuration.get_site().baseurl
+            configuration.get_podcast().base_url
         )
     };
-    let url = if configuration.get_site().baseurl.is_empty() {
-        "".to_string()
-    } else if configuration.get_site().baseurl.starts_with('/') {
-        configuration.get_site().baseurl.to_owned()
-    } else {
-        format!("/{}", configuration.get_site().baseurl)
-    };
-    let ctx = context! {
-        url => url,
-        site => configuration.get_site(),
-        posts => posts,
-    };
-    let template = ENV.get_template("feed.xml").unwrap();
-    match template.render(ctx) {
+    match configuration.get_podcast().get_feed(posts){
         Ok(content) => {
             write_post(
                 &public,
                 "",
-                Some(&configuration.get_site().podcast_feed),
+                Some(&configuration.get_podcast().feed_url),
                 &content,
             )
             .await;
@@ -212,25 +199,25 @@ async fn generate_feed(configuration: &Configuration, posts: &[Post]) {
 
 async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>) {
     debug!("generate_stats");
-    let public = if configuration.get_site().baseurl.is_empty() {
+    let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
     } else {
         format!(
             "{}/{}",
             configuration.get_public(),
-            configuration.get_site().baseurl
+            configuration.get_podcast().base_url
         )
     };
-    let url = if configuration.get_site().baseurl.is_empty() {
+    let url = if configuration.get_podcast().base_url.is_empty() {
         "".to_string()
-    } else if configuration.get_site().baseurl.starts_with('/') {
-        configuration.get_site().baseurl.to_owned()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
     } else {
-        format!("/{}", configuration.get_site().baseurl)
+        format!("/{}", configuration.get_podcast().base_url)
     };
     let ctx = context! {
         url => url,
-        site => configuration.get_site(),
+        podcast => configuration.get_podcast(),
         posts => posts,
     };
     let template = ENV.get_template("statistics.html").unwrap();
@@ -254,25 +241,25 @@ async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>) {
 
 async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
     debug!("generate_index");
-    let public = if configuration.get_site().baseurl.is_empty() {
+    let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
     } else {
         format!(
             "{}/{}",
             configuration.get_public(),
-            configuration.get_site().baseurl
+            configuration.get_podcast().base_url
         )
     };
-    let url = if configuration.get_site().baseurl.is_empty() {
+    let url = if configuration.get_podcast().base_url.is_empty() {
         "".to_string()
-    } else if configuration.get_site().baseurl.starts_with('/') {
-        configuration.get_site().baseurl.to_owned()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
     } else {
-        format!("/{}", configuration.get_site().baseurl)
+        format!("/{}", configuration.get_podcast().base_url)
     };
     let ctx = context! {
         url => url,
-        site => configuration.get_site(),
+        site => configuration.get_podcast(),
         posts => posts,
     };
     let template = ENV.get_template("index.html").unwrap();
@@ -295,26 +282,26 @@ async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
 
 async fn generate_html(configuration: &Configuration, posts: &[Post]) {
     debug!("generate_html");
-    let public = if configuration.get_site().baseurl.is_empty() {
+    let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
     } else {
         format!(
             "{}/{}",
             configuration.get_public(),
-            configuration.get_site().baseurl
+            configuration.get_podcast().base_url
         )
     };
-    let url = if configuration.get_site().baseurl.is_empty() {
+    let url = if configuration.get_podcast().base_url.is_empty() {
         "".to_string()
-    } else if configuration.get_site().baseurl.starts_with('/') {
-        configuration.get_site().baseurl.to_owned()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
     } else {
-        format!("/{}", configuration.get_site().baseurl)
+        format!("/{}", configuration.get_podcast().base_url)
     };
     for post in posts {
         let ctx = context!(
             url => url,
-            site => configuration.get_site(),
+            site => configuration.get_podcast(),
             post => post,
         );
         let template = ENV.get_template("post.html").unwrap();

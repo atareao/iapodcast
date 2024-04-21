@@ -1,13 +1,11 @@
 pub mod archive;
 pub mod publisher;
 pub mod config;
-pub mod feed;
 pub mod error;
 pub mod episode;
 mod utils;
 
 
-use error::Error;
 use minijinja::{Environment, path_loader};
 use once_cell::sync::Lazy;
 use chrono::{DateTime, FixedOffset};

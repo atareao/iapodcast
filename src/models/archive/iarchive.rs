@@ -1,5 +1,5 @@
 use tracing::{info, debug, error};
-use serde::{Serialize, Deserialize, Deserializer};
+use serde::{Serialize, Deserialize};
 use super::{
     IAMetadata,
     Mp3Metadata,
@@ -13,12 +13,6 @@ const PAGESIZE: usize = 200;
 pub struct IAClient{
     pub uploader: String,
     pub podcast: String,
-}
-
-fn deserialize_on_empty<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
-where D: Deserializer<'de>{
-        let o: Option<String> = Option::deserialize(deserializer)?;
-        Ok(o.filter(|s| !s.is_empty()))
 }
 
 impl IAClient{
