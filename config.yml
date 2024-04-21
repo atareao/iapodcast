@@ -1,1 +1,14 @@
 log_level: info
+itunes:
+  author: atareao
+  email: atareao@atareao.es
+  image_url: https://rustacean.net/assets/cuddlyferris.png 
+  explicit: false
+  title: Diario de un crustáceo
+  summary: Cuento mis aventuras y desventuras en Rust y Linux
+  keywords:
+    - rust
+    - rustacean
+    - crate
+    - linux
+    - neovim
