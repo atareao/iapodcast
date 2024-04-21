@@ -8,12 +8,8 @@ rust-version = "1.76"
 
 
 [dependencies]
-tokio = { version = "1.37", features = ["full", "time"] }
-async-recursion = "1.1"
-
-# reqwest
-reqwest = { version = "0.12", features = ["json"] }
-openssl = { version = "0.10", features = ["vendored"] }
+tokio = { version = "1.37", features = ["time", "full"] }
+ureq = { version = "2.9.6", features = ["json"] }
 
 # Templates
 once_cell = "1.19.0"

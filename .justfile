@@ -1,6 +1,6 @@
 user    := "atareao"
-name    := `basename ${PWD}`
-version := `git tag -l  | tail -n1`
+name    := `toml get Cargo.toml package.name --raw`
+version := `toml get Cargo.toml package.version --raw`
 
 default:
     @just --list

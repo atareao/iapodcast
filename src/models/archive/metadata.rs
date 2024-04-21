@@ -2,12 +2,12 @@ use regex::Regex;
 use html_escape::decode_html_entities;
 
 #[derive(Debug)]
-pub struct AOMetadata{
+pub struct IAMetadata{
     pub identifier: String,
     pub description: String,
 }
 
-impl AOMetadata {
+impl IAMetadata {
     pub fn new(content: &str) -> Self{
         let identifier = Self::get("identifier", content).first().unwrap().to_string();
         let description = html2md::parse_html(

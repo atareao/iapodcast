@@ -1,6 +1,4 @@
-use reqwest::Client;
-use serde_json::json;
-use tracing::{info, error};
+use tracing::{info, debug, error};
 
 pub struct Telegram{
     access_token: String,
@@ -27,53 +25,35 @@ impl Telegram{
         }
     }
 
-    #[allow(dead_code)]
-    pub async fn post(&self, message: &str){
-        info!("Message to publish in Telegram: {}", message);
-        let url = format!("https://api.telegram.org/bot{}/sendMessage",
-            self.access_token);
-        info!("url  {}", url);
-        let message = json!({
-            "chat_id": self.chat_id,
-            "text": message,
-            "parse_mode": "HTML",
-        });
-        match Client::new()
-            .post(url)
-            .json(&message)
-            .send()
-            .await{
-                Ok(response) => {
-                    info!("Mensaje envíado a Telegram: {}",
-                        response.status().to_string());
-                },
-                Err(error) => {
-                    error!("No he podido enviar el mensaje a Telegram: {}",
-                        error.to_string());
-                },
-            }
-    }
-
-    pub async fn send_audio(&self, audio: &str, caption: &str) -> Result<String, reqwest::Error>{
+    pub fn send_audio(&self, audio: &str, caption: &str){
         let url = format!("https://api.telegram.org/bot{}/sendAudio",
             self.access_token);
         info!("url  {}", url);
         let content = Self::prepare(caption);
-        info!("content  {}", content);
-        let message = json!({
-            "chat_id": self.chat_id,
-            "audio": audio,
-            "caption": content,
-            "parse_mode": "HTML",
-        });
-        Client::new()
-            .post(url)
-            .json(&message)
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await
+
+        match ureq::post(&url)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .send_json(ureq::json!({
+                "chat_id": self.chat_id,
+                "audio": audio,
+                "caption": content,
+                "parse_mode": "HTML",
+            })){
+            Ok(mut response) => {
+                if response.status() == 200 {
+                    info!("Send audio");
+                    debug!("Audio: {audio}");
+                }else{
+                    let status_code = response.status();
+                    let error = response.into_string().unwrap();
+                    error!("Error sending audio. HTTP Error: {status_code}. {error}")
+                }
+            },
+            Err(e) => {
+                error!("Error sending audio: {e}")
+            }
+        }
     }
 
     fn prepare(text: &str) -> String{
@@ -90,11 +70,10 @@ impl Telegram{
 mod tests {
     use dotenv::dotenv;
     use std::env;
-    use crate::models::telegram::Telegram;
-    use tokio;
+    use super::Telegram;
 
-    #[tokio::test]
-    async fn send_audio_test(){
+    #[test]
+    fn send_audio_test(){
         dotenv().ok();
         let token = env::var("TOKEN").unwrap();
         let chat_id = env::var("CHAT_ID").unwrap();
@@ -108,8 +87,7 @@ Ya sabéis, poco a poco irá llegando a vuestro programa de podcast favorito, a 
         println!("==============================================");
         
         let telegram = Telegram::new(&token, &chat_id);
-        let answer = telegram.send_audio(&audio, caption).await;
-        println!("{:?}", answer);
+        telegram.send_audio(&audio, caption);
     }
 }
 
