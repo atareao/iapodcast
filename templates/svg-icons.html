@@ -1,0 +1,6 @@
+{% if site.email %}<a href="mailto:{{ site.email | safe }}"><i class="svg-icon email"></i></a>{% endif %}
+{% if site.gitlab %}<a href="https://gitlab.com/{{ site.gitlab | safe }}"><i class="svg-icon gitlab"></i></a>{% endif %}
+{% if site.rss %}<a href="{{ site.rss | safe }}"><i class="svg-icon rss"></i></a>{% endif %}
+{% if site.twitter %}<a href="https://www.twitter.com/{{ site.twitter | safe }}"><i class="svg-icon twitter"></i></a>{% endif %}
+{% if site.archiveorg %}<a href="https://archive.org/details/@{{ site.archiveorg | safe }}"><i class="svg-icon archiveorg"></i></a>{% endif %}
+

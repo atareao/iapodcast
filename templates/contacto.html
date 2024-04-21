@@ -1,0 +1,15 @@
+<div>
+    <p>Métodos de contacto:</p>
+    <ul>
+        <li>Twitter: <a href="https://twitter.com/atareao">@atareao</a></li>
+        {% if podcast.email %}
+        <li>Correo: <a href="mailto:{{ podcast.email | safe }}">{{ podcast.email | safe }}</a></li>
+        {% endif %}
+        {% if podcast.url %}
+        <li>Web: <a href="{{ podcast.url | safe }}{% if url %}/{{url | safe }}{% endif %}">{{ podcast.url | safe }}{% if url %}/{{url | safe}}{% endif %}</a></li>
+        {% endif %}
+        {% if podcast.feed_url %}
+        <li>Feed podcast: <a href="{{ podcast.feed_url | safe }}">{{ podcast.feed_url | safe}}</a></li>
+        {% endif %}
+    </ul>
+</div>

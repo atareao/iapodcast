@@ -1,0 +1,21 @@
+{% extends "default.html" %}
+{% block title %}{{ post.title }}{% endblock title %}
+{% block content %}
+<article class="post">
+    <h1>{{ post.title }}</h1>
+    <div class="date">
+        <p>Escrito el {{ post.date | date(format="%d/%m/%Y") | safe }}</p>
+        <p>Escrito el {{ post.date | date(format="[day]/[month]/[year]") | safe }}</p>
+    </div>
+    <div class="entry">
+        {{ post.content | safe }}
+        {% if post.layout == "PODCAST" %}
+        <audio controls="">
+            <source src="https://archive.org/download/{{post.identifier | safe}}/{{post.filename | safe}}" type="audio/mpeg" />
+        </audio>
+        {% endif %}
+    </div>
+    {% include "contacto.html" %}
+    {% include "disqus.html" %}
+</article>
+{% endblock content %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% block head %}
+        <title>{% block title %}{% endblock title %} – {{ site.title }}</title>
+        {% include "meta.html" %}
+        <link rel="stylesheet" type="text/css" href="{{ url | safe }}/assets/style.css" />
+        <link rel="alternate" type="application/rss+xml" title="{{ site.title }} - {{ site.description }}" href="{{ url | safe }}/feed.xml" />
+        {% endblock head %}
+    </head>
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="{{ url | safe }}/" class="site-avatar"><img src="{{ site.avatar | safe }}" /></a>
+          <div class="site-info">
+            <h1 class="site-name"><a href="{{ url | safe }}/">{{ site.title }}</a></h1>
+            <p class="site-description">{{ site.description }}</p>
+          </div>
+          <nav>
+            <a href="{{ url | safe }}/">Blog</a>
+            {% for page in pages %}
+                <a href="{{ url | safe }}/{{ page.slug }}">{{ page.title }}</a>
+            {% endfor %}
+          </nav>
+        </header>
+      </div>
+    </div>
+    <div id="main" role="main" class="container">
+        {% block content %}{% endblock content %}
+    </div>
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          {% include "svg-icons.html" %}
+        </footer>
+      </div>
+    </div>
+    {% include "analytics.html" %}
+  </body>
+</html>
