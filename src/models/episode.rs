@@ -6,10 +6,12 @@ use comrak::{markdown_to_html, ComrakOptions};
 use std::{fmt, marker::PhantomData};
 
 use super::{
-    doc::Doc,
-    site::Post,
-    metadata::AOMetadata,
-    mp3metadata::Mp3Metadata,
+    archive::{
+        Doc,
+        IAMetadata,
+        Mp3Metadata,
+    },
+    config::Post,
     utils::{
         get_slug,
         get_excerpt
@@ -207,15 +209,15 @@ impl Episode{
         tokio::fs::write(self.get_filename(), content).await
     }
 
-    pub fn combine(doc: &Doc, aometadata: &AOMetadata, mp3: &Mp3Metadata) -> Episode{
+    pub fn combine(doc: &Doc, iametadata: &IAMetadata, mp3: &Mp3Metadata) -> Episode{
         let title = if mp3.title.is_empty(){
             doc.get_identifier()
         }else{
             &mp3.title
         };
         let comment = if mp3.comment.is_empty(){
-            debug!("Description: {}", &aometadata.description);
-            get_excerpt(&aometadata.description)
+            debug!("Description: {}", &iametadata.description);
+            get_excerpt(&iametadata.description)
         }else{
             &mp3.comment
         };
@@ -236,7 +238,7 @@ impl Episode{
         };
         Self{
             metadata,
-            content: aometadata.description.to_owned()
+            content: iametadata.description.to_owned()
         }
     }
 }

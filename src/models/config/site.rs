@@ -1,5 +1,8 @@
 use serde::{Serialize, Deserialize};
+use rss::{Item, extension::itunes::ITunesItemExtensionBuilder, ItemBuilder};
 use chrono::{DateTime, Utc};
+
+use super::Podcast;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Site{
@@ -17,6 +20,7 @@ pub struct Site{
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Post{
+    pub podcast: Podcast,
     pub slug: String,
     pub excerpt: String,
     pub title: String,
@@ -32,3 +36,11 @@ pub struct Post{
     pub downloads: u64,
 }
 
+impl Into<Item> for Post{
+    fn into(self) -> Item{
+        ItemBuilder::default()
+            .author(Some(self.podcast.author))
+            .build()
+    }
+
+}

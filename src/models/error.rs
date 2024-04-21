@@ -41,6 +41,12 @@ impl Display for Error{
     }
 }
 
+impl From<minijinja::Error> for Error{
+    fn from(error: minijinja::Error) -> Self{
+        Error::new(&error.to_string())
+    }
+}
+
 
 impl StdError for Error {
     fn description(&self) -> &str {
@@ -62,6 +68,12 @@ impl From<ParseIntError> for Error{
 
 impl From<Utf8Error> for Error{
     fn from(error: Utf8Error) -> Self{
+        Error::new(&error.to_string())
+    }
+}
+
+impl From<rss::Error> for Error{
+    fn from(error: rss::Error) -> Self{
         Error::new(&error.to_string())
     }
 }

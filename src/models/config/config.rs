@@ -2,15 +2,19 @@ use serde::{Serialize, Deserialize};
 use tokio::fs::read_to_string;
 use std::{process, fmt::{self, Display}};
 
-use super::{site::Site, archive::ArchiveOrg};
+use super::{
+    site::Site,
+    Podcast,
+    super::archive::IAClient};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Configuration{
     log_level: String,
+    podcast: Podcast,
     data: String,
     public: String,
     style_css: String,
-    archiveorg: ArchiveOrg,
+    iaclient: IAClient,
     site: Site,
 }
 
@@ -29,8 +33,8 @@ impl Configuration {
         &self.site
     }
 
-    pub fn get_archiveorg(&self) -> &ArchiveOrg{
-        &self.archiveorg
+    pub fn get_iaclient(&self) -> &IAClient{
+        &self.iaclient
     }
 
     pub fn get_log_level(&self) -> &str{
