@@ -12,9 +12,11 @@ variables:
 
 
 .modify: &modify |
+  echo "Start modify"
   /app/iapodcast
 
 .push: &push |
+  echo "Start push"
   git status
   lines=$(git status -s | wc -l)
   if [ $lines -gt 0 ];then

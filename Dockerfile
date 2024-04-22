@@ -44,7 +44,7 @@ RUN adduser \
 
 # Set the work dir
 WORKDIR /app
-USER app
+#USER app
 
 # Copy our build
 COPY --from=builder /app/iapodcast /app/
