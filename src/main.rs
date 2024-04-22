@@ -44,26 +44,30 @@ async fn main() {
 
     let posts = read_episodes().await;
     debug!("{:?}", posts);
-    debug!("=== Generation ===");
-    create_public(&configuration).await;
-    generate_html(&configuration, &posts).await;
-    generate_index(&configuration, &posts).await;
-    generate_feed(&configuration, &posts).await;
-    generate_stats(&configuration, &posts).await;
-    let public = if configuration.get_podcast().base_url.is_empty() {
-        configuration.get_public().to_owned()
+    if posts.is_empty() {
+        debug!("=== No audios found ===");
     } else {
-        format!(
-            "{}/{}",
-            configuration.get_public(),
-            configuration.get_podcast().base_url
-        )
-    };
-    //TODO: Copy directory assets a /public/{podcast}/assets
-    //let output = format!("{}/style.css", public);
-    let assets_dir = format!("{}/assets", public);
-    create_dir(&assets_dir).await;
-    copy_all_files("assets", &assets_dir).await;
+        debug!("=== Generation ===");
+        create_public(&configuration).await;
+        generate_html(&configuration, &posts).await;
+        generate_index(&configuration, &posts).await;
+        generate_feed(&configuration, &posts).await;
+        generate_stats(&configuration, &posts).await;
+        let public = if configuration.get_podcast().base_url.is_empty() {
+            configuration.get_public().to_owned()
+        } else {
+            format!(
+                "{}/{}",
+                configuration.get_public(),
+                configuration.get_podcast().base_url
+            )
+        };
+        //TODO: Copy directory assets a /public/{podcast}/assets
+        //let output = format!("{}/style.css", public);
+        let assets_dir = format!("{}/assets", public);
+        create_dir(&assets_dir).await;
+        copy_all_files("assets", &assets_dir).await;
+    }
 }
 
 async fn read_episodes() -> Vec<Post> {

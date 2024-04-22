@@ -1,4 +1,4 @@
-log_level: info
+log_level: debug
 public: public/temporal
 style_css: assets/style.css
 timezone: Europe/Madrid
