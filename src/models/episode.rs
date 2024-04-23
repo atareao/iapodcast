@@ -9,7 +9,7 @@ use super::{
     archive::{
         Doc,
         IAMetadata,
-        Mp3Metadata,
+        AudioMetadata,
     },
     config::Post,
     utils::{
@@ -201,7 +201,7 @@ impl Episode{
         tokio::fs::write(self.get_filename(), content).await
     }
 
-    pub fn combine(doc: &Doc, iametadata: &IAMetadata, mp3: &Mp3Metadata) -> Episode{
+    pub fn combine(doc: &Doc, iametadata: &IAMetadata, mp3: &AudioMetadata) -> Episode{
         let title = if mp3.title.is_empty(){
             doc.get_identifier()
         }else{

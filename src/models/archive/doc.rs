@@ -11,10 +11,11 @@ pub struct Doc{
     identifier: String,
     #[serde(default = "default_number")]
     version: usize,
-    publicdate:DateTime<Utc>,
+    publicdate: DateTime<Utc>,
     #[serde(deserialize_with = "string_or_seq_string")]
     subject: Vec<String>,
     description: String,
+    title: String,
     downloads: u64,
 }
 

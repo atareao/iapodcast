@@ -378,7 +378,7 @@ async fn update(configuration: &Configuration) {
     for doc in new_docs {
         match IAClient::get_metadata(doc.get_identifier()){
             Some(metadata) => {
-                match IAClient::get_mp3_metadata(doc.get_identifier()){
+                match IAClient::get_audio_metadata(doc.get_identifier()){
                     Some(mp3) => {
                         let episode = Episode::combine(&doc, &metadata, &mp3);
                         match episode.save().await {

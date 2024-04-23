@@ -2,7 +2,7 @@ use tracing::{info, debug, error};
 use serde::{Serialize, Deserialize};
 use super::{
     IAMetadata,
-    Mp3Metadata,
+    AudioMetadata,
     Doc,
 };
 
@@ -116,7 +116,7 @@ impl IAClient{
         items
     }
 
-    pub fn get_mp3_metadata(identifier: &str) -> Option<Mp3Metadata>{
+    pub fn get_audio_metadata(identifier: &str) -> Option<AudioMetadata>{
         let url = format!("{}/download/{identifier}/{identifier}_files.xml",
             BASE_URL, identifier=identifier);
         info!("url: {}", url);
@@ -125,7 +125,7 @@ impl IAClient{
             Ok(response) => {
                 if response.status() == 200{
                     match response.into_string(){
-                        Ok(content) => Mp3Metadata::new(&content),
+                        Ok(content) => AudioMetadata::new(&content),
                         Err(e) => {
                             error!("Cant convert response: {e}");
                             None
