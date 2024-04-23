@@ -261,7 +261,7 @@ async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
     };
     let ctx = context! {
         url => url,
-        site => configuration.get_podcast(),
+        podcast => configuration.get_podcast(),
         posts => posts,
     };
     let template = ENV.get_template("index.html").unwrap();
@@ -301,9 +301,10 @@ async fn generate_html(configuration: &Configuration, posts: &[Post]) {
         format!("/{}", configuration.get_podcast().base_url)
     };
     for post in posts {
+        debug!("Write post: {:?}", post);
         let ctx = context!(
             url => url,
-            site => configuration.get_podcast(),
+            podcast => configuration.get_podcast(),
             post => post,
         );
         let template = ENV.get_template("post.html").unwrap();
