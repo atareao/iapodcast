@@ -6,19 +6,11 @@ use comrak::{markdown_to_html, ComrakOptions};
 use std::{fmt, marker::PhantomData};
 
 use super::{
-    archive::{
-        Doc,
-        IAMetadata,
-        AudioMetadata,
-    },
+    archive::Doc,
     config::Post,
-    utils::{
-        get_slug,
-        get_excerpt
-    },
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Metadata{
     // from doc
     #[serde(default = "default_number")]
@@ -87,7 +79,7 @@ fn default_number() -> usize {
 
 impl Metadata{
     pub fn get_filename(&self) -> String {
-        format!("episodes/{}.md", self.identifier)
+        format!("episodes/{}.md", &self.identifier)
     }
 }
 
@@ -98,6 +90,14 @@ pub struct Episode{
 }
 
 impl Episode{
+    pub fn get_filename(&self) -> String {
+        self.metadata.get_filename()
+    }
+
+    pub fn get_identifier(&self) -> &str {
+        self.metadata.identifier.as_str()
+    }
+
     pub fn get_post(&self) -> Post{
         let content = markdown_to_html(&self.content, &ComrakOptions::default());
         Post{
@@ -122,7 +122,6 @@ impl Episode{
     }
 
     pub async fn new(filename: &str) -> Result<Self, serde_json::Error>{
-        let mut save = false;
         let filename = format!("episodes/{}", filename);
         debug!("Filename: {}", filename);
         let data = tokio::fs::read_to_string(&filename)
@@ -130,55 +129,25 @@ impl Episode{
             .unwrap();
         let matter = Matter::<YAML>::new();
         let result = matter.parse(&data);
-        let mut metadata: Metadata = result.data.unwrap().deserialize()?;
-        debug!("Metadata: {:?}", &metadata);
-        if metadata.slug.is_empty(){
-            debug!("Is empty");
-            metadata.slug = get_slug(&metadata.title);
-            save = true;
-        }
-        if metadata.excerpt.is_empty(){
-            metadata.excerpt = match result.excerpt {
-                Some(excerpt) => {
-                    save = true;
-                    excerpt
-                },
-                None => get_excerpt(&result.content).to_string(),
-            };
-        }
+        let metadata: Metadata = result.data.unwrap().deserialize()?;
         debug!("Metadata: {:?}", &metadata);
         let episode = Self{
             metadata,
             content: result.content,
         };
-        if save{
-            match episode.save().await{
-                Ok(_) => {
-                    info!("Saved article {}", episode.get_filename());
-                    if filename != episode.get_filename(){
-                        match tokio::fs::remove_file(&filename).await{
-                            Ok(_) => info!("Removed {}", &filename),
-                            Err(e) => error!("Cant remove {}. {}", &filename, e),
-                        }
+        match episode.save().await{
+            Ok(_) => {
+                info!("Saved article {}", episode.get_filename());
+                if filename != episode.get_filename(){
+                    match tokio::fs::remove_file(&filename).await{
+                        Ok(_) => info!("Removed {}", &filename),
+                        Err(e) => error!("Cant remove {}. {}", &filename, e),
                     }
-                },
-                Err(_) => error!("Cant save article {}", episode.get_filename()),
-            }
+                }
+            },
+            Err(_) => error!("Cant save article {}", episode.get_filename()),
         }
         Ok(episode)
-    }
-
-    #[allow(dead_code)]
-    pub fn get_title(&self) -> &str{
-        &self.metadata.title
-    }
-
-    pub fn get_filename(&self) -> String{
-        self.metadata.get_filename()
-    }
-
-    pub fn get_slug(&self) -> String{
-        self.metadata.slug.to_string()
     }
 
     pub fn get_downloads(&self) -> u64{
@@ -200,20 +169,10 @@ impl Episode{
         debug!("Content: {}", content);
         tokio::fs::write(self.get_filename(), content).await
     }
+}
 
-    pub fn combine(doc: &Doc, iametadata: &IAMetadata, mp3: &AudioMetadata) -> Episode{
-        let title = if mp3.title.is_empty(){
-            doc.get_identifier()
-        }else{
-            &mp3.title
-        };
-        let comment = if mp3.comment.is_empty(){
-            debug!("Description: {}", &iametadata.description);
-            get_excerpt(&iametadata.description)
-        }else{
-            &mp3.comment
-        };
-        debug!("Comment: {}", &comment);
+impl From<Doc> for Episode{
+    fn from(doc: Doc) -> Self{
         let metadata = Metadata{
             number: doc.get_number(),
             identifier: doc.get_identifier().to_string(),
@@ -221,16 +180,16 @@ impl Episode{
             downloads: doc.get_downloads(),
             datetime: Some(doc.get_datetime()),
             version: doc.get_version(),
-            title: title.to_string(),
-            excerpt: comment.to_owned(),
-            filename: mp3.filename.to_string(),
-            size: mp3.size,
-            length: mp3.length,
-            slug: get_slug(title),
+            title: doc.get_title().to_string(),
+            excerpt: doc.get_exceprt(),
+            filename: doc.get_audio_filename().to_string(),
+            size: doc.get_size(),
+            length: doc.get_length(),
+            slug: doc.get_slug(),
         };
         Self{
             metadata,
-            content: iametadata.description.to_owned()
+            content: doc.get_description().to_string()
         }
     }
 }

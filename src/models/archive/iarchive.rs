@@ -1,12 +1,10 @@
-use tracing::{info, debug, error};
+use tracing::{debug, error};
 use serde::{Serialize, Deserialize};
 use super::{
-    IAMetadata,
-    AudioMetadata,
     Doc,
+    BASE_URL,
 };
 
-const BASE_URL: &str = "https://archive.org";
 const PAGESIZE: usize = 200;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -114,64 +112,6 @@ impl IAClient{
         }
         items.sort_by_key(|b| std::cmp::Reverse(b.get_datetime()));
         items
-    }
-
-    pub fn get_audio_metadata(identifier: &str) -> Option<AudioMetadata>{
-        let url = format!("{}/download/{identifier}/{identifier}_files.xml",
-            BASE_URL, identifier=identifier);
-        info!("url: {}", url);
-        match ureq::get(&url)
-            .call(){
-            Ok(response) => {
-                if response.status() == 200{
-                    match response.into_string(){
-                        Ok(content) => AudioMetadata::new(&content),
-                        Err(e) => {
-                            error!("Cant convert response: {e}");
-                            None
-                        },
-                    }
-                }else{
-                    let status_code = response.status();
-                    let message = response.into_string().unwrap();
-                    error!("HTTP Error: {status_code}. Error: {message}");
-                    None
-                }
-            }
-            Err(e) => {
-                error!("Cant get response: {e}");
-                None
-            }
-        }
-    }
-
-    pub fn get_metadata(identifier: &str) -> Option<IAMetadata>{
-        let url = format!("{}/download/{identifier}/{identifier}_meta.xml",
-            BASE_URL, identifier=identifier);
-        info!("url: {}", url);
-        match ureq::get(&url)
-            .call(){
-            Ok(response) => {
-                if response.status() == 200{
-                    match response.into_string(){
-                        Ok(content) => Some(IAMetadata::new(&content)),
-                        Err(e) => {
-                            error!("Cant convert response: {e}");
-                            None
-                        },
-                    }
-                }else{
-                    let status_code = response.status();
-                    let message = response.into_string().unwrap();
-                    error!("HTTP Error: {status_code}. Error: {message}");
-                    None
-                }
-            }
-            Err(e) => {
-                error!("Cant get response: {e}");
-                None
-            }
-        }
     }
 }
 

@@ -10,7 +10,6 @@ use tracing::{debug, error, info};
 use std::str::FromStr;
 
 use models::{
-    archive::IAClient,
     publisher::{
         Telegram,
         get_telegram_client,
@@ -339,7 +338,7 @@ async fn update(configuration: &Configuration) {
         if doc.exists().await {
             debug!("Doc {} exists", doc.get_identifier());
             debug!("Doc: {:?}", &doc);
-            let filename = doc.get_filename();
+            let filename = doc.get_post_filename();
             //BUG: Esto hay que revisar
             match Episode::new(&filename).await {
                 Ok(ref mut episode) => {
@@ -348,9 +347,9 @@ async fn update(configuration: &Configuration) {
                         episode.set_version(VERSION);
                         episode.set_downloads(doc.get_downloads());
                         match episode.save().await {
-                            Ok(_) => info!("Episode {} saved", episode.get_slug()),
+                            Ok(_) => info!("Episode {} saved", episode.get_identifier()),
                             Err(err) => {
-                                error!("1 Can not save episode {}. {:#}", episode.get_slug(), err);
+                                error!("1 Can not save episode {}. {:#}", episode.get_identifier(), err);
                                 // render causes as well
                                 let mut err = &err as &dyn std::error::Error;
                                 while let Some(next_err) = err.source() {
@@ -375,43 +374,37 @@ async fn update(configuration: &Configuration) {
             new_docs.push(doc);
         }
     }
-    for doc in new_docs {
-        match IAClient::get_metadata(doc.get_identifier()){
-            Some(metadata) => {
-                match IAClient::get_audio_metadata(doc.get_identifier()){
-                    Some(mp3) => {
-                        let episode = Episode::combine(&doc, &metadata, &mp3);
-                        match episode.save().await {
-                            Ok(_) => {
-                                match &telegram_client {
-                                    Some(client) => {
-                                        post_with_telegram(configuration, &episode, client).await;
-                                    }
-                                    None => {}
-                                };
-                                match &mastodon_client {
-                                    Some(client) => {
-                                        post_with_mastodon(configuration, &episode, client).await;
-                                    }
-                                    None => {}
-                                }
-                                info!("Episode {} saved", episode.get_slug());
-                            }
-                            Err(err) => {
-                                error!("2 Can not save episode {}. {:#}", episode.get_slug(), err);
-                                // render causes as well
-                                let mut err = &err as &dyn std::error::Error;
-                                while let Some(next_err) = err.source() {
-                                    error!("caused by: {:#}", next_err);
-                                    err = next_err;
-                                }
-                            }
+    for mut doc in new_docs {
+        if let Err(e) = doc.complete() {
+            error!("Can' complete doc: {e}");
+        }else{
+            let episode: Episode = doc.into();
+            match episode.save().await {
+                Ok(_) => {
+                    match &telegram_client {
+                        Some(client) => {
+                            post_with_telegram(configuration, &episode, client).await;
                         }
+                        None => {}
+                    };
+                    match &mastodon_client {
+                        Some(client) => {
+                            post_with_mastodon(configuration, &episode, client).await;
+                        }
+                        None => {}
                     }
-                    None => error!("Cant download audio metadata from {}", doc.get_identifier()),
+                    info!("Episode {} saved", episode.get_identifier());
+                }
+                Err(err) => {
+                    error!("2 Can not save episode {}. {:#}", episode.get_identifier(), err);
+                    // render causes as well
+                    let mut err = &err as &dyn std::error::Error;
+                    while let Some(next_err) = err.source() {
+                        error!("caused by: {:#}", next_err);
+                        err = next_err;
+                    }
                 }
             }
-            None => error!("Cant download metadata from {}", doc.get_identifier()),
         }
     }
 }

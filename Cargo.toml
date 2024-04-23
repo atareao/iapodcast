@@ -33,7 +33,6 @@ chrono = { version = "0.4", features = ["serde"] }
 chrono-tz = "0.9"
 
 # Markdown
-html2md = "0.2"
 comrak = "0.22"
 rss = "2.0.7"
 
