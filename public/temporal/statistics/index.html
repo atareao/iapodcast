@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    
+        <title>Statistics – Diario de un crustáceo</title>
+            <meta charset="utf-8" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <meta name="description" content="Donde cuento mis aventuras y desventuras en Rust y Linux">
+    <meta property="og:description" content="Donde cuento mis aventuras y desventuras en Rust y Linux" />
+    <meta name="author" content="atareao" />
+
+    <meta property="og:title" content="Diario de un crustáceo" />
+    <meta property="twitter:title" content="Diario de un crustáceo" />
+    
+        <link rel="stylesheet" type="text/css" href="/assets/style.css" />
+        <link rel="alternate" type="application/rss+xml" title="Diario de un crustáceo - Donde cuento mis aventuras y desventuras en Rust y Linux" href="/feed.xml" />
+        
+    <style>
+        th{
+            cursor: pointer;
+        }
+    </style>
+    <script>
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("stats");
+        switching = true;
+        // Set the sorting direction to ascending:
+        dir = "asc";
+        /* Make a loop that will continue until
+        no switching has been done: */
+        while (switching) {
+            // Start by saying: no switching is done:
+            switching = false;
+            rows = table.rows;
+            /* Loop through all table rows (except the
+            first, which contains table headers): */
+            for (i = 1; i < (rows.length - 1); i++) {
+                // Start by saying there should be no switching:
+                shouldSwitch = false;
+                /* Get the two elements you want to compare,
+                one from current row and one from the next: */
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                /* Check if the two rows should switch place,
+                based on the direction, asc or desc: */
+                if ( n == 1 && ((dir == "asc" && (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase())) || 
+                        (dir == "desc" && (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase())))) {
+                    shouldSwitch = true;
+                    break;
+                }else if ((dir == "asc" && (Number(x.innerHTML) > Number(y.innerHTML))) ||
+                        (dir == "desc" && (Number(x.innerHTML) < Number(y.innerHTML)))) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            if (shouldSwitch) {
+                /* If a switch has been marked, make the switch
+                and mark that a switch has been done: */
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                // Each time a switch is done, increase this count by 1:
+                switchcount ++;
+            } else {
+                /* If no switching has been done AND the direction is "asc",
+                set the direction to "desc" and run the while loop again. */
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+    </script>
+
+    </head>
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://rustacean.net/assets/cuddlyferris.png" /></a>
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Diario de un crustáceo</a></h1>
+            <p class="site-description">Donde cuento mis aventuras y desventuras en Rust y Linux</p>
+          </div>
+          <nav>
+            <a href="/">Blog</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+    <div id="main" role="main" class="container">
+        
+<div class="posts">
+    <table id="stats">
+        <tr>
+            <th onclick="sortTable(0)">Number</th>
+            <th onclick="sortTable(1)">Title</th>
+            <th onclick="sortTable(2)">Views</th>
+        </tr>
+        
+        
+        
+    </table>
+</div>
+</div>
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          <a href="mailto:atareao@atareao.es"><i class="svg-icon email"></i></a>
+<a href="feed.xml"><i class="svg-icon rss"></i></a></footer>
+      </div>
+    </div>
+  </body>
+</html>
