@@ -8,7 +8,6 @@ use super::{
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Configuration{
-    log_level: String,
     public: String,
     style_css: String,
     timezone: String,
@@ -18,8 +17,7 @@ pub struct Configuration{
 
 impl Display for Configuration{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "log_level: {}\npublic: {}",
-            self.get_log_level(),
+        write!(f, "public: {}",
             self.get_public(),
         )
     }
@@ -32,10 +30,6 @@ impl Configuration {
 
     pub fn get_iaclient(&self) -> &IAClient{
         &self.iaclient
-    }
-
-    pub fn get_log_level(&self) -> &str{
-        &self.log_level
     }
 
     pub fn get_public(&self) -> &str{

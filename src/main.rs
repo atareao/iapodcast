@@ -29,14 +29,13 @@ const VERSION: usize = 1;
 
 #[tokio::main]
 async fn main() {
+    let log_level = option_env!("RUST_LOG").unwrap_or("DEBUG");
     let configuration = Configuration::read_configuration().await;
-    let log_level = configuration.get_log_level();
 
     tracing_subscriber::registry()
         .with(EnvFilter::from_str(log_level).unwrap())
         .with(tracing_subscriber::fmt::layer())
         .init();
-
 
     debug!("Configuration: {:?}", configuration);
 
@@ -409,10 +408,10 @@ async fn update(configuration: &Configuration) {
                             }
                         }
                     }
-                    None => error!("Cant download from {}", doc.get_identifier()),
+                    None => error!("Cant download audio metadata from {}", doc.get_identifier()),
                 }
             }
-            None => error!("Cant download from {}", doc.get_identifier()),
+            None => error!("Cant download metadata from {}", doc.get_identifier()),
         }
     }
 }

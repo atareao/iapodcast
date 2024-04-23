@@ -31,42 +31,29 @@ impl IAClient{
 
     fn get_docs(&self, since: &str, page: usize) -> Vec<Doc>{
         let mut items = Vec::new();
-        let fields: String = ["description", "downloads", "identifier",
-            "item_size", "name", "publicdate",
-            "publisher", "subject", "title"]
-            .into_iter()
-            .map(|field| format!("fl[]={}", field))
-            .collect::<Vec<String>>()
-        .join("&");
-        
-        let sort = "publicdate asc";
-        let output = "json";
         let q: String = [
             format!("uploader:({uploader})", uploader=self.uploader),
             format!("publicdate:[{since} TO 9999-12-31]"),
             format!("podcast:({podcast})", podcast=self.podcast),
             "mediatype:(audio)".to_string(),
         ].join(" AND ");
-
-        let url = format!("{base}/advancedsearch.php?q=uploader:({uploader}) \
-            AND date:[{since} TO 9999-12-31] \
-            AND mediatype:(audio) \
-            AND podcast:({podcast})
-            AND format:(MP3) \
-            OR format:(MPEG-4)
-            &{fields}\
-            &sort[]={sort}\
-            &output={output}\
-            &rows={rows}\
-            &page={page}",
-            base=BASE_URL, uploader=self.uploader, podcast=self.podcast,
-            since=since, fields=fields,sort=sort,
-            output=output, rows=PAGESIZE, page=page);
-        info!("url: {}", url);
+        let page_str = page.to_string();
+        let pagesize_str = PAGESIZE.to_string();
         let query_pairs = vec![
             ("q", q.as_str()),
-            ("sort[]", sort),
-            ("output", output),
+            ("sort[]", "publicdate asc"),
+            ("fl[]", "description"),
+            ("fl[]", "downloads"),
+            ("fl[]", "identifier"),
+            ("fl[]", "item_size"),
+            ("fl[]", "name"),
+            ("fl[]", "publicdate"),
+            ("fl[]", "publisher"),
+            ("fl[]", "subject"),
+            ("fl[]", "title"),
+            ("output", "json"),
+            ("rows", pagesize_str.as_str()),
+            ("page", page_str.as_str()),
         ];
         let url = format!("{BASE_URL}/advancedsearch.php");
         match ureq::get(&url)
