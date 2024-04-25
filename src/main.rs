@@ -25,8 +25,6 @@ use models::{
     ENV,
 };
 
-const VERSION: usize = 1;
-
 #[tokio::main]
 async fn main() {
     let log_level = option_env!("RUST_LOG").unwrap_or("DEBUG");
@@ -42,16 +40,18 @@ async fn main() {
     update(&configuration).await;
 
     let posts = read_episodes().await;
+    let pages = read_pages().await;
     debug!("{:?}", posts);
     if posts.is_empty() {
         debug!("=== No audios found ===");
     } else {
         debug!("=== Generation ===");
         create_public(&configuration).await;
-        generate_html(&configuration, &posts).await;
-        generate_index(&configuration, &posts).await;
+        generate_html(&configuration, &posts, &pages).await;
+        generate_index(&configuration, &posts, &pages).await;
+        generate_pages(&configuration, &pages).await;
         generate_feed(&configuration, &posts).await;
-        generate_stats(&configuration, &posts).await;
+        generate_stats(&configuration, &posts, &pages).await;
         let public = if configuration.get_podcast().base_url.is_empty() {
             configuration.get_public().to_owned()
         } else {
@@ -96,16 +96,16 @@ async fn read_episodes() -> Vec<Post> {
     posts
 }
 
-async fn read_pages() -> Vec<Page> {
-    let mut pages = Vec::new();
-    let mut episodes_dir = tokio::fs::read_dir("page").await.unwrap();
-    while let Some(file) = episodes_dir.next_entry().await.unwrap() {
+async fn read_pages() -> Vec<Post> {
+    let mut posts = Vec::new();
+    let mut pages_dir = tokio::fs::read_dir("pages").await.unwrap();
+    while let Some(file) = pages_dir.next_entry().await.unwrap() {
         if file.metadata().await.unwrap().is_file() {
             let filename = file.file_name().to_str().unwrap().to_string();
             if filename.ends_with(".md") {
                 debug!("Read pages: {}", filename);
                 match Page::new(&filename).await {
-                    Ok(episode) => pages.push(episode.get_post()),
+                    Ok(episode) => posts.push(episode.get_post()),
                     Err(err) => {
                         error!("Can not write {}. {:#}", filename, err);
                         // render causes as well
@@ -119,8 +119,8 @@ async fn read_pages() -> Vec<Page> {
             }
         }
     }
-    pages.sort_by(|a, b| b.date.cmp(&a.date));
-    pages
+    posts.sort_by(|a, b| b.date.cmp(&a.date));
+    posts
 }
 
 async fn post_with_mastodon(configuration: &Configuration, episode: &Episode,
@@ -227,7 +227,7 @@ async fn generate_feed(configuration: &Configuration, posts: &[Post]) {
     }
 }
 
-async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>) {
+async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>, pages: &Vec<Post>) {
     debug!("generate_stats");
     let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
@@ -249,6 +249,7 @@ async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>) {
         url => url,
         podcast => configuration.get_podcast(),
         posts => posts,
+        pages => pages,
     };
     let template = ENV.get_template("statistics.html").unwrap();
     match template.render(ctx) {
@@ -269,7 +270,8 @@ async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>) {
     }
 }
 
-async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
+async fn generate_index(configuration: &Configuration, posts: &Vec<Post>,
+    pages: &Vec<Post>) {
     debug!("generate_index");
     let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
@@ -291,6 +293,7 @@ async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
         url => url,
         podcast => configuration.get_podcast(),
         posts => posts,
+        pages => pages,
     };
     let template = ENV.get_template("index.html").unwrap();
     match template.render(ctx) {
@@ -310,7 +313,7 @@ async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
     }
 }
 
-async fn generate_pages(configuration: &Configuration) {
+async fn generate_pages(configuration: &Configuration, pages: &Vec<Post>) {
     debug!("generate_pages");
     let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
@@ -328,10 +331,38 @@ async fn generate_pages(configuration: &Configuration) {
     } else {
         format!("/{}", configuration.get_podcast().base_url)
     };
+    for page in pages {
+        debug!("Write page: {:?}", page);
+        let ctx = context!(
+            url => url,
+            podcast => configuration.get_podcast(),
+            page => page,
+        );
+        let template = ENV.get_template("page.html").unwrap();
+        match template.render(ctx) {
+            Ok(content) => {
+                debug!("{}", &content);
+                debug!("Page: {:?}", &page);
+                create_dir(&format!("{}/{}", public, &page.slug)).await;
+                write_post(&public, &page.slug, None, &content).await
+            }
+            Err(err) => {
+                error!("Could not render template: {:#}", err);
+                // render causes as well
+                let mut err = &err as &dyn std::error::Error;
+                while let Some(next_err) = err.source() {
+                    error!("caused by: {:#}", next_err);
+                    err = next_err;
+                }
+            }
+        }
+
+    }
 
 }
 
-async fn generate_html(configuration: &Configuration, posts: &[Post]) {
+async fn generate_html(configuration: &Configuration, posts: &[Post],
+        pages: &[Post]) {
     debug!("generate_html");
     let public = if configuration.get_podcast().base_url.is_empty() {
         configuration.get_public().to_owned()
@@ -355,6 +386,7 @@ async fn generate_html(configuration: &Configuration, posts: &[Post]) {
             url => url,
             podcast => configuration.get_podcast(),
             post => post,
+            pages => pages,
         );
         let template = ENV.get_template("post.html").unwrap();
         match template.render(ctx) {
@@ -394,7 +426,6 @@ async fn update(configuration: &Configuration) {
                 Ok(ref mut episode) => {
                     if episode.get_downloads() != doc.get_downloads()
                     {
-                        episode.set_version(VERSION);
                         episode.set_downloads(doc.get_downloads());
                         match episode.save().await {
                             Ok(_) => info!("Episode {} saved", episode.get_identifier()),

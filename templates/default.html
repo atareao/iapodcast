@@ -19,6 +19,9 @@
           </div>
           <nav>
             <a href="{{ url | safe }}/">Blog</a>
+            {% for page in pages %}
+                <a href="{{ url | safe }}/{{ page.slug }}">{{ page.title }}</a>
+            {% endfor %}
           </nav>
         </header>
       </div>

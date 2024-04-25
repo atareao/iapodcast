@@ -1,9 +1,10 @@
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize, Deserializer, de};
+use serde::{Deserialize, Serialize};
 use tracing::{debug, info, error};
 use gray_matter::{Matter, engine::YAML};
 use comrak::{markdown_to_html, ComrakOptions};
-use std::{fmt, marker::PhantomData};
+
+use super::utils::string_or_seq_string;
 
 use super::{
     archive::Doc,
@@ -25,8 +26,6 @@ pub struct Metadata{
     pub filename: String,
     #[serde(default = "get_default_datetime")]
     pub datetime: Option<DateTime<Utc>>,
-    #[serde(default = "get_default_version")]
-    pub version: usize,
     pub size: u64,
     pub length: u64,
     pub excerpt: String,
@@ -38,40 +37,6 @@ pub struct Metadata{
 fn get_default_datetime() -> Option<DateTime<Utc>>{
     None
 }
-
-fn get_default_version() -> usize{
-    0
-}
-
-
-fn string_or_seq_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
-    where D: Deserializer<'de>
-{
-    struct StringOrVec(PhantomData<Vec<String>>);
-
-    impl<'de> de::Visitor<'de> for StringOrVec {
-        type Value = Vec<String>;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("string or list of strings")
-        }
-
-        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where E: de::Error
-        {
-            Ok(vec![value.to_owned()])
-        }
-
-        fn visit_seq<S>(self, visitor: S) -> Result<Self::Value, S::Error>
-            where S: de::SeqAccess<'de>
-        {
-            Deserialize::deserialize(de::value::SeqAccessDeserializer::new(visitor))
-        }
-    }
-
-    deserializer.deserialize_any(StringOrVec(PhantomData))
-}
-
 
 fn default_number() -> usize {
     0
@@ -109,7 +74,6 @@ impl Episode{
             content,
             subject: self.metadata.subject.clone(),
             date: self.metadata.datetime.unwrap(),
-            version: self.metadata.version,
             identifier: self.metadata.identifier.clone(),
             filename: self.metadata.filename.clone(),
             length: self.metadata.length,
@@ -117,10 +81,6 @@ impl Episode{
             number: self.metadata.number,
             downloads: self.metadata.downloads,
         }
-    }
-
-    pub fn set_version(&mut self, version: usize){
-        self.metadata.version = version
     }
 
     pub async fn new(filename: &str) -> Result<Self, serde_json::Error>{
@@ -181,7 +141,6 @@ impl From<Doc> for Episode{
             subject: doc.get_subject(),
             downloads: doc.get_downloads(),
             datetime: Some(doc.get_datetime()),
-            version: doc.get_version(),
             title: doc.get_title().to_string(),
             excerpt: doc.get_exceprt(),
             filename: doc.get_audio_filename().to_string(),

@@ -1,5 +1,6 @@
+use gray_matter::{Matter, engine::YAML};
 use serde::{Deserialize, Serialize};
-use tracing::{debug, info, error};
+use tracing::{debug, info};
 use comrak::{markdown_to_html, ComrakOptions};
 
 use super::{
@@ -8,6 +9,7 @@ use super::{
         get_slug,
         get_unix_time,
         get_excerpt,
+        string_or_seq_string,
     }
 };
 
@@ -15,33 +17,40 @@ use super::{
 struct Metadata{
     pub title: String,
     pub date: String,
+    #[serde(deserialize_with = "string_or_seq_string")]
+    pub subject: Vec<String>,
 }
 
 impl Metadata{
-    pub fn get_filename(&self) -> String {
-        format!("pages/{}.md", self.slug)
+    pub fn get_slug(&self) -> String {
+        get_slug(&self.title)
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Page{
     metadata: Metadata,
+    filename: String,
     pub content: String,
 }
 
 impl Page{
     pub fn get_post(&self) -> Post{
+        info!("get_post");
+        let options = &ComrakOptions::default();
         let date = get_unix_time(&self.metadata.date);
-        let content = markdown_to_html(&self.content, &ComrakOptions::default());
+        let slug = self.metadata.get_slug();
+        let content = markdown_to_html(&self.content, options);
+        let excerpt = markdown_to_html(get_excerpt(&self.content), options);
         Post{
             title: self.metadata.title.clone(),
             date,
-            excerpt: self.metadata.excerpt.clone(),
-            slug: self.metadata.slug.clone(),
+            excerpt,
+            slug,
             content,
-            subject: Vec::new(),
-            identifier: self.metadata.slug.clone(),
-            filename: "".to_string(),
+            subject: self.metadata.subject.clone(),
+            identifier: self.filename.clone(),
+            filename: self.filename.clone(),
             size: 0,
             length: 0,
             number: 0,
@@ -50,7 +59,7 @@ impl Page{
     }
 
     pub async fn new(filename: &str) -> Result<Self, serde_json::Error>{
-        let mut save = false;
+        info!("new: {filename}");
         let filename = format!("pages/{}", filename);
         debug!("Filename: {}", filename);
         let data = tokio::fs::read_to_string(&filename)
@@ -58,58 +67,16 @@ impl Page{
             .unwrap();
         let matter = Matter::<YAML>::new();
         let result = matter.parse(&data);
-        let mut metadata: Metadata = result.data.unwrap().deserialize()?;
-        debug!("Metadata: {:?}", &metadata);
-        if metadata.slug.is_empty(){
-            debug!("Is empty");
-            metadata.slug = get_slug(&metadata.title);
-            save = true;
-        }
-        if metadata.excerpt.is_empty(){
-            metadata.excerpt = match result.excerpt {
-                Some(excerpt) => {
-                    save = true;
-                    excerpt
-                },
-                None => get_excerpt(&result.content).to_string(),
-            };
-        }
-        debug!("Metadata: {:?}", &metadata);
+        let metadata: Metadata = result.data.unwrap().deserialize()?;
         let page = Page{
             metadata,
+            filename: filename.to_string(),
             content: result.content,
         };
-        if save{
-            match page.save().await{
-                Ok(_) => {
-                    info!("Saved page {}", page.get_filename());
-                    if filename != page.get_filename(){
-                        match tokio::fs::remove_file(&filename).await{
-                            Ok(_) => info!("Removed {}", &filename),
-                            Err(e) => error!("Cant remove {}. {}", &filename, e),
-                        }
-                    }
-                },
-                Err(_) => error!("Cant save page {}", page.get_filename()),
-            }
-        }
         Ok(page)
     }
-
-    pub fn get_filename(&self) -> String{
-        self.metadata.get_filename()
-    }
-
-    pub async fn save(&self)-> tokio::io::Result<()>{
-        let mut content = String::new();
-        content.push_str("---\n");
-        content.push_str(&serde_yaml::to_string(&self.metadata).unwrap());
-        content.push_str("---\n");
-        content.push_str(&self.content);
-        debug!("Content: {}", content);
-        tokio::fs::write(self.get_filename(), content).await
-    }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -120,7 +87,7 @@ mod tests {
     };
     use std::str::FromStr;
     use tracing::debug;
-    use crate::models::page::Page;
+    use super::Page;
 
     #[tokio::test]
     async fn test_page(){
