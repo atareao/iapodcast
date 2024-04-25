@@ -1,4 +1,4 @@
-public: public/temporal
+public: public
 style_css: assets/style.css
 timezone: Europe/Madrid
 podcast:
@@ -7,7 +7,6 @@ podcast:
   url: ""
   author: atareao
   email: atareao@atareao.es
-  link: ""
   image_url: https://rustacean.net/assets/cuddlyferris.png 
   category: Technology
   subcategory:

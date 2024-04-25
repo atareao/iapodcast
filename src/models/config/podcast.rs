@@ -23,7 +23,6 @@ pub struct Podcast{
     pub url: String,
     pub author: String,
     pub email: String,
-    pub link: String,
     pub image_url: String,
     pub category: String,
     #[serde(deserialize_with = "empty_as_none")]
@@ -86,7 +85,7 @@ impl Podcast {
             author=self.author, license=self.license);
         ChannelBuilder::default()
             .title(self.title.to_string())
-            .link(self.link.to_string())
+            .link(self.url.to_string())
             .description(self.description.to_string())
             .categories(categories)
             .copyright(Some(copyright))

@@ -19,7 +19,8 @@ use models::{
     episode::Episode,
     config::{
         Configuration,
-        Post
+        Post,
+        Page,
     },
     ENV,
 };
@@ -93,6 +94,33 @@ async fn read_episodes() -> Vec<Post> {
     }
     posts.sort_by(|a, b| b.date.cmp(&a.date));
     posts
+}
+
+async fn read_pages() -> Vec<Page> {
+    let mut pages = Vec::new();
+    let mut episodes_dir = tokio::fs::read_dir("page").await.unwrap();
+    while let Some(file) = episodes_dir.next_entry().await.unwrap() {
+        if file.metadata().await.unwrap().is_file() {
+            let filename = file.file_name().to_str().unwrap().to_string();
+            if filename.ends_with(".md") {
+                debug!("Read pages: {}", filename);
+                match Page::new(&filename).await {
+                    Ok(episode) => pages.push(episode.get_post()),
+                    Err(err) => {
+                        error!("Can not write {}. {:#}", filename, err);
+                        // render causes as well
+                        let mut err = &err as &dyn std::error::Error;
+                        while let Some(next_err) = err.source() {
+                            error!("caused by: {:#}", next_err);
+                            err = next_err;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    pages.sort_by(|a, b| b.date.cmp(&a.date));
+    pages
 }
 
 async fn post_with_mastodon(configuration: &Configuration, episode: &Episode,
@@ -280,6 +308,27 @@ async fn generate_index(configuration: &Configuration, posts: &Vec<Post>) {
             }
         }
     }
+}
+
+async fn generate_pages(configuration: &Configuration) {
+    debug!("generate_pages");
+    let public = if configuration.get_podcast().base_url.is_empty() {
+        configuration.get_public().to_owned()
+    } else {
+        format!(
+            "{}/{}",
+            configuration.get_public(),
+            configuration.get_podcast().base_url
+        )
+    };
+    let url = if configuration.get_podcast().base_url.is_empty() {
+        "".to_string()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
+    } else {
+        format!("/{}", configuration.get_podcast().base_url)
+    };
+
 }
 
 async fn generate_html(configuration: &Configuration, posts: &[Post]) {

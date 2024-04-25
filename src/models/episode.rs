@@ -99,10 +99,12 @@ impl Episode{
     }
 
     pub fn get_post(&self) -> Post{
-        let content = markdown_to_html(&self.content, &ComrakOptions::default());
+        let options = &ComrakOptions::default();
+        let content = markdown_to_html(&self.content, options);
+        let excerpt = markdown_to_html(&self.metadata.excerpt, options);
         Post{
             slug: self.metadata.slug.clone(),
-            excerpt: self.metadata.excerpt.clone(),
+            excerpt,
             title: self.metadata.title.clone(),
             content,
             subject: self.metadata.subject.clone(),
