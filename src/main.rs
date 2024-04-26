@@ -65,7 +65,7 @@ async fn main() {
         //let output = format!("{}/style.css", public);
         let assets_dir = format!("{}/assets", public);
         create_dir(&assets_dir).await;
-        copy_all_files("assets", &assets_dir).await;
+        copy_all_files(configuration.get_assets(), &assets_dir).await;
     }
 }
 
@@ -98,28 +98,29 @@ async fn read_episodes() -> Vec<Post> {
 
 async fn read_pages() -> Vec<Post> {
     let mut posts = Vec::new();
-    let mut pages_dir = tokio::fs::read_dir("pages").await.unwrap();
-    while let Some(file) = pages_dir.next_entry().await.unwrap() {
-        if file.metadata().await.unwrap().is_file() {
-            let filename = file.file_name().to_str().unwrap().to_string();
-            if filename.ends_with(".md") {
-                debug!("Read pages: {}", filename);
-                match Page::new(&filename).await {
-                    Ok(episode) => posts.push(episode.get_post()),
-                    Err(err) => {
-                        error!("Can not write {}. {:#}", filename, err);
-                        // render causes as well
-                        let mut err = &err as &dyn std::error::Error;
-                        while let Some(next_err) = err.source() {
-                            error!("caused by: {:#}", next_err);
-                            err = next_err;
+    if let Ok(mut pages_dir) = tokio::fs::read_dir("pages").await {
+        while let Some(file) = pages_dir.next_entry().await.unwrap() {
+            if file.metadata().await.unwrap().is_file() {
+                let filename = file.file_name().to_str().unwrap().to_string();
+                if filename.ends_with(".md") {
+                    debug!("Read pages: {}", filename);
+                    match Page::new(&filename).await {
+                        Ok(episode) => posts.push(episode.get_post()),
+                        Err(err) => {
+                            error!("Can not write {}. {:#}", filename, err);
+                            // render causes as well
+                            let mut err = &err as &dyn std::error::Error;
+                            while let Some(next_err) = err.source() {
+                                error!("caused by: {:#}", next_err);
+                                err = next_err;
+                            }
                         }
                     }
                 }
             }
         }
+        posts.sort_by(|a, b| b.date.cmp(&a.date));
     }
-    posts.sort_by(|a, b| b.date.cmp(&a.date));
     posts
 }
 
@@ -204,7 +205,20 @@ async fn generate_feed(configuration: &Configuration, posts: &[Post]) {
             configuration.get_podcast().base_url
         )
     };
-    match configuration.get_podcast().get_feed(posts){
+    let url = if configuration.get_podcast().base_url.is_empty() {
+        "".to_string()
+    } else if configuration.get_podcast().base_url.starts_with('/') {
+        configuration.get_podcast().base_url.to_owned()
+    } else {
+        format!("/{}", configuration.get_podcast().base_url)
+    };
+    let ctx = context! {
+        url => url,
+        podcast => configuration.get_podcast(),
+        posts => posts,
+    };
+    let template = ENV.get_template("feed.xml").unwrap();
+    match template.render(ctx) {
         Ok(content) => {
             write_post(
                 &public,

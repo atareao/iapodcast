@@ -1,6 +1,5 @@
 public: public
-style_css: assets/style.css
-timezone: Europe/Madrid
+assets: assets
 podcast:
   base_url: ""
   feed_url: "feed.xml"

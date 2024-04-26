@@ -72,12 +72,6 @@ impl From<Utf8Error> for Error{
     }
 }
 
-impl From<rss::Error> for Error{
-    fn from(error: rss::Error) -> Self{
-        Error::new(&error.to_string())
-    }
-}
-
 impl From<ureq::Error> for Error{
     fn from(error: ureq::Error) -> Self {
         Error::new(&error.to_string())

@@ -20,8 +20,13 @@ pub static ENV: Lazy<Environment<'static>> = Lazy::new(|| {
     env.add_filter("date", date);
     env.add_filter("truncate", truncate);
     env.add_function("now", now);
+    env.add_function("endswith", endswith);
     env
 });
+
+fn endswith(value: String, endpart: String) -> bool {
+    value.ends_with(&endpart)
+}
 
 fn striptags(value: String) -> String {
     let mut data = String::new();

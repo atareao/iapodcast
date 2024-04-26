@@ -9,8 +9,7 @@ use super::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Configuration{
     public: String,
-    style_css: String,
-    timezone: String,
+    assets: String,
     podcast: Podcast,
     iaclient: IAClient,
 }
@@ -36,8 +35,8 @@ impl Configuration {
         &self.public
     }
 
-    pub fn get_style_css(&self) -> &str{
-        &self.style_css
+    pub fn get_assets(&self) -> &str{
+        &self.assets
     }
 
     pub async fn read_configuration() -> Configuration{
