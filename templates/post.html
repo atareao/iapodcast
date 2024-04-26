@@ -6,11 +6,17 @@
     <div class="date">
         <p>Escrito el {{ post.date | date(format="%d/%m/%Y") | safe }}</p>
     </div>
+    {{ params.clave1 }}
+    {{ params.clave2 }}
     <div class="entry">
-        {{ post.content | safe }}
         <audio controls="">
-            <source src="https://archive.org/download/{{post.identifier | safe}}/{{post.filename | safe}}" type="audio/mpeg" />
+            {% if endswith(post.filename, "m4a") -%}
+            <source src="https://{{ params.op3 | safe }}/archive.org/download/{{post.identifier | safe}}/{{post.filename | safe}}" type="audio/m4a" />
+            {% else -%}
+            <source src="https://{{ params.op3 | safe }}/archive.org/download/{{post.identifier | safe}}/{{post.filename | safe}}" type="audio/mpeg" />
+            {% endif -%}
         </audio>
+        {{ post.content | safe }}
     </div>
     {% include "contacto.html" %}
     {% include "disqus.html" %}

@@ -71,7 +71,7 @@
         {% for post in posts %}
         <tr>
             <td style="text-align: start;">{{ post.number }}</td>
-            <td style="text-align: start;"><a href="{{ url | safe }}/{{ post.slug }}">{{ post.title | safe}}</a></td>
+            <td style="text-align: start;"><a href="{{ podcast.url | safe }}/{{ post.slug }}">{{ post.title | safe}}</a></td>
             <td style="text-align: start;">{{ post.downloads }}</td>
         </tr>
         {% endfor %}

@@ -1,9 +1,10 @@
 public: public
 assets: assets
+params:
+  op3: op3.dev/e,pg=b60bb41d-c977-5e32-b0a6-424eeb4fe3fb
 podcast:
-  base_url: ""
-  feed_url: "feed.xml"
-  url: ""
+  feed_url: feed.xml
+  url: https://diario-de-un-crustaceo-atareao-1be0f2794d228b0d5c1f30972cd8dab4.gitlab.io/
   author: atareao
   email: atareao@atareao.es
   image_url: https://rustacean.net/assets/cuddlyferris.png 

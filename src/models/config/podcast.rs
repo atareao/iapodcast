@@ -2,7 +2,6 @@ use serde::{Serialize, Deserialize, Deserializer};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Podcast{
-    pub base_url: String,
     pub feed_url: String,
     pub url: String,
     pub author: String,

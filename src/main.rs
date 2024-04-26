@@ -52,15 +52,7 @@ async fn main() {
         generate_pages(&configuration, &pages).await;
         generate_feed(&configuration, &posts).await;
         generate_stats(&configuration, &posts, &pages).await;
-        let public = if configuration.get_podcast().base_url.is_empty() {
-            configuration.get_public().to_owned()
-        } else {
-            format!(
-                "{}/{}",
-                configuration.get_public(),
-                configuration.get_podcast().base_url
-            )
-        };
+        let public = configuration.get_public().to_owned();
         //TODO: Copy directory assets a /public/{podcast}/assets
         //let output = format!("{}/style.css", public);
         let assets_dir = format!("{}/assets", public);
@@ -126,16 +118,9 @@ async fn read_pages() -> Vec<Post> {
 
 async fn post_with_mastodon(configuration: &Configuration, episode: &Episode,
         mastodon: &Mastodon) {
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
     let ctx = context! {
-        url => url,
         podcast => configuration.get_podcast(),
+        params => configuration.get_params(),
         post => episode.get_post(),
     };
     let template = ENV.get_template("mastodon.html").unwrap();
@@ -158,21 +143,14 @@ async fn post_with_mastodon(configuration: &Configuration, episode: &Episode,
 
 async fn post_with_telegram(configuration: &Configuration, episode: &Episode,
         telegram: &Telegram) {
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
     let post = episode.get_post();
     let audio = format!(
         "https://archive.org/download/{}/{}",
         &post.identifier, &post.filename
     );
     let ctx = context! {
-        url => url,
         podcast => configuration.get_podcast(),
+        params => configuration.get_params(),
         audio => audio,
         post => episode.get_post(),
     };
@@ -196,25 +174,10 @@ async fn post_with_telegram(configuration: &Configuration, episode: &Episode,
 
 async fn generate_feed(configuration: &Configuration, posts: &[Post]) {
     debug!("generate_feed");
-    let public = if configuration.get_podcast().base_url.is_empty() {
-        configuration.get_public().to_owned()
-    } else {
-        format!(
-            "{}/{}",
-            configuration.get_public(),
-            configuration.get_podcast().base_url
-        )
-    };
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
+    let public = configuration.get_public().to_owned();
     let ctx = context! {
-        url => url,
         podcast => configuration.get_podcast(),
+        params => configuration.get_params(),
         posts => posts,
     };
     let template = ENV.get_template("feed.xml").unwrap();
@@ -243,25 +206,10 @@ async fn generate_feed(configuration: &Configuration, posts: &[Post]) {
 
 async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>, pages: &Vec<Post>) {
     debug!("generate_stats");
-    let public = if configuration.get_podcast().base_url.is_empty() {
-        configuration.get_public().to_owned()
-    } else {
-        format!(
-            "{}/{}",
-            configuration.get_public(),
-            configuration.get_podcast().base_url
-        )
-    };
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
+    let public = configuration.get_public().to_owned();
     let ctx = context! {
-        url => url,
         podcast => configuration.get_podcast(),
+        params => configuration.get_params(),
         posts => posts,
         pages => pages,
     };
@@ -287,25 +235,10 @@ async fn generate_stats(configuration: &Configuration, posts: &Vec<Post>, pages:
 async fn generate_index(configuration: &Configuration, posts: &Vec<Post>,
     pages: &Vec<Post>) {
     debug!("generate_index");
-    let public = if configuration.get_podcast().base_url.is_empty() {
-        configuration.get_public().to_owned()
-    } else {
-        format!(
-            "{}/{}",
-            configuration.get_public(),
-            configuration.get_podcast().base_url
-        )
-    };
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
+    let public = configuration.get_public().to_owned();
     let ctx = context! {
-        url => url,
         podcast => configuration.get_podcast(),
+        params => configuration.get_params(),
         posts => posts,
         pages => pages,
     };
@@ -329,27 +262,12 @@ async fn generate_index(configuration: &Configuration, posts: &Vec<Post>,
 
 async fn generate_pages(configuration: &Configuration, pages: &Vec<Post>) {
     debug!("generate_pages");
-    let public = if configuration.get_podcast().base_url.is_empty() {
-        configuration.get_public().to_owned()
-    } else {
-        format!(
-            "{}/{}",
-            configuration.get_public(),
-            configuration.get_podcast().base_url
-        )
-    };
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
+    let public = configuration.get_public().to_owned();
     for page in pages {
         debug!("Write page: {:?}", page);
         let ctx = context!(
-            url => url,
             podcast => configuration.get_podcast(),
+            params => configuration.get_params(),
             page => page,
         );
         let template = ENV.get_template("page.html").unwrap();
@@ -378,27 +296,12 @@ async fn generate_pages(configuration: &Configuration, pages: &Vec<Post>) {
 async fn generate_html(configuration: &Configuration, posts: &[Post],
         pages: &[Post]) {
     debug!("generate_html");
-    let public = if configuration.get_podcast().base_url.is_empty() {
-        configuration.get_public().to_owned()
-    } else {
-        format!(
-            "{}/{}",
-            configuration.get_public(),
-            configuration.get_podcast().base_url
-        )
-    };
-    let url = if configuration.get_podcast().base_url.is_empty() {
-        "".to_string()
-    } else if configuration.get_podcast().base_url.starts_with('/') {
-        configuration.get_podcast().base_url.to_owned()
-    } else {
-        format!("/{}", configuration.get_podcast().base_url)
-    };
+    let public = configuration.get_public().to_owned();
     for post in posts {
         debug!("Write post: {:?}", post);
         let ctx = context!(
-            url => url,
             podcast => configuration.get_podcast(),
+            params => configuration.get_params(),
             post => post,
             pages => pages,
         );
@@ -524,7 +427,6 @@ async fn write_post(base: &str, endpoint: &str, filename: Option<&str>, content:
         "write_post. Base: {base}. Endpoint {endpoint}. Filename: {:?}",
         filename
     );
-    let base = clean_path(base);
     let endpoint = clean_path(endpoint);
     let filename = filename.unwrap_or("index.html");
     let output = if endpoint.is_empty() {

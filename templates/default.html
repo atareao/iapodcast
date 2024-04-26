@@ -4,23 +4,23 @@
         {% block head %}
         <title>{% block title %}{% endblock title %} – {{ podcast.title }}</title>
         {% include "meta.html" %}
-        <link rel="stylesheet" type="text/css" href="{{ url | safe }}/assets/style.css" />
-        <link rel="alternate" type="application/rss+xml" title="{{ podcast.title }} - {{ podcast.description }}" href="{{ url | safe }}/feed.xml" />
+        <link rel="stylesheet" type="text/css" href="{{ podcast.url | safe }}/assets/style.css" />
+        <link rel="alternate" type="application/rss+xml" title="{{ podcast.title }} - {{ podcast.description }}" href="{{ podcast.url | safe }}/feed.xml" />
         {% endblock head %}
     </head>
   <body>
     <div class="wrapper-masthead">
       <div class="container">
         <header class="masthead clearfix">
-          <a href="{{ url | safe }}/" class="site-avatar"><img src="{{ podcast.image_url | safe }}" /></a>
+          <a href="{{ podcast.url | safe }}/" class="site-avatar"><img src="{{ podcast.image_url | safe }}" /></a>
           <div class="site-info">
-            <h1 class="site-name"><a href="{{ url | safe }}/">{{ podcast.title }}</a></h1>
+            <h1 class="site-name"><a href="{{ podcast.url | safe }}/">{{ podcast.title }}</a></h1>
             <p class="site-description">{{ podcast.description }}</p>
           </div>
           <nav>
-            <a href="{{ url | safe }}/">Blog</a>
+            <a href="{{ podcast.url | safe }}/">Blog</a>
             {% for page in pages %}
-                <a href="{{ url | safe }}/{{ page.slug }}">{{ page.title }}</a>
+                <a href="{{ podcast.url | safe }}/{{ page.slug }}">{{ page.title }}</a>
             {% endfor %}
           </nav>
         </header>

@@ -1,6 +1,13 @@
 use serde::{Serialize, Deserialize};
+use minijinja::Value;
 use tokio::fs::read_to_string;
-use std::{process, fmt::{self, Display}};
+use std::{
+    process,
+    fmt::{
+        self,
+        Display
+    }
+};
 
 use super::{
     Podcast,
@@ -9,6 +16,7 @@ use super::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Configuration{
     public: String,
+    params: Option<Value>,
     assets: String,
     podcast: Podcast,
     iaclient: IAClient,
@@ -37,6 +45,10 @@ impl Configuration {
 
     pub fn get_assets(&self) -> &str{
         &self.assets
+    }
+
+    pub fn get_params(&self) -> &Option<Value>{
+        &self.params
     }
 
     pub async fn read_configuration() -> Configuration{
