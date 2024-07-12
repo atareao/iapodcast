@@ -9,7 +9,7 @@
     {{ params.clave1 }}
     {{ params.clave2 }}
     <div class="entry">
-        <audio controls="">
+        <audio controls="" preload="none">
             {% if endswith(post.filename, "m4a") -%}
             <source src="https://{{ params.op3 | safe }}/archive.org/download/{{post.identifier | safe}}/{{post.filename | safe}}" type="audio/m4a" />
             {% else -%}
